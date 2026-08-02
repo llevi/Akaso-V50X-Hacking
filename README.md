@@ -11,6 +11,7 @@ I am not responsible for your broken camera
 - Telnetd and ftpd
 - Use the screen to show arbitrary texts
 - Rtsp server (IP cam mode)
+- Make screenshots of the menu
 
 ## Usage
 You have to disassemble the device and solder a generic UART to the board:
@@ -45,6 +46,13 @@ mount -o remount,exec /app/sd
 ## Extra bootup message
 - Use fbtext (source and bin provided)
 
+
+## Screenshots
+- copy the screenshot bin and the screenshot.sh wrapper. 
+- Use the wrapper without args on the device.
+- It makes the filename current date. it makes a .ppm format files but you can convert it to png anytime. 
+
+
 ## RTSP Stream
 - I've reverse engineered the URLs:
 - Use VLC With theese streams if you are on the same network:
@@ -52,5 +60,11 @@ rtsp://xx.xx.xx.xx:554/livestream/11
 rtsp://xx.xx.xx.xx:554/livestream/12
 
 ## Happy hacking
+
+
+![screenshot1](screen.png)
+
+![screenshot2](screen2.png)
+
 
 ![text on screen](proof.jpg)
