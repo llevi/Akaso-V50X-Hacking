@@ -100,10 +100,18 @@ rtsp://xx.xx.xx.xx:554/livestream/12
   ```
 - Upload them to /app/sd/lib/komod
 
-- Create an empty file on your SD to be your alpine rootfs. On the camera:
-  `/app/sd/lib # truncate -s 500M alpine-root`
-  ``
-
+- Sadly, i was not able to use loop device yet since the kernel module didn't work on this custom kernel. So I reformatted my sdcard to have 2 partitions, one is the usual vfat and the other is an ext4 to run alpine linux in it (vfat doesn't support symlinks)
+- Followed this: https://wiki.alpinelinux.org/wiki/Alpine_Linux_in_a_chroot to run a chroot
+- Run these commands to start the alpine environment:
+```
+mkdir /dev/alpine-root
+insmod /app/sd/lib/komod/jbd2.ko 
+insmod /app/sd/lib/komod/mbcache.ko 
+insmod /app/sd/lib/komod/ext4.ko 
+mount /dev/mmcblk0p2 /dev/alpine-root
+cd /dev/alpine-root
+chroot .
+```
 ## Happy hacking
 
 
