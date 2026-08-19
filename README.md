@@ -59,6 +59,51 @@ mount -o remount,exec /app/sd
 rtsp://xx.xx.xx.xx:554/livestream/11
 rtsp://xx.xx.xx.xx:554/livestream/12
 
+## WiP: Run Alpine Linux in chroot
+- We need to use a Symlink supporting FS, but we don't have the support for it.
+- Let's cross compile the kernel modules to be able to use ext4, on your computer:
+  ```
+    cd /tmp
+    wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.9.37.tar.xz # Change the version if you have other kernel version
+    tar -xf linux-4.9.37.tar.xz
+    cd linux-4.9.37
+    sudo apt update
+    sudo apt install -y gcc-arm-linux-gnueabihf
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon defconfig && \
+    scripts/config --disable CONFIG_SMP && \
+    scripts/config --module CONFIG_EXT4_FS && \
+    scripts/config --module CONFIG_JBD2 && \
+    scripts/config --module CONFIG_FS_MBCACHE && \
+    scripts/config --module CONFIG_BLK_DEV_LOOP && \
+    rm -f include/config/auto.conf include/config/auto.conf.cmd include/generated/autoconf.h && \
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon oldconfig < /dev/null && \
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon prepare modules_prepare && \
+    echo '=== CONFIG ===' && \
+    grep -E '^CONFIG_(EXT4_FS|JBD2|FS_MBCACHE|SMP)=' .config && \
+    echo '=== AUTO.CONF ===' && \
+    grep -E '^CONFIG_(EXT4_FS|JBD2|FS_MBCACHE|SMP)=' include/config/auto.conf && \
+    echo '=== BUILD JBD2 ===' && \
+    rm -f fs/jbd2/*.o fs/jbd2/jbd2.ko fs/jbd2/*.mod.c fs/jbd2/*.mod fs/jbd2/.*.cmd && \
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon KCFLAGS=-march=armv7-a M=fs/jbd2 modules -j$(nproc) && \
+    echo '=== BUILD MBCACHE ===' && \
+    rm -f fs/mbcache.o fs/mbcache.ko fs/mbcache.mod.c fs/mbcache.mod fs/.*.cmd && \
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon KCFLAGS=-march=armv7-a M=fs modules -j$(nproc) && \
+    echo '=== BUILD EXT4 ===' && \
+    rm -f fs/ext4/*.o fs/ext4/ext4.ko fs/ext4/*.mod.c fs/ext4/*.mod fs/ext4/.*.cmd && \
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon KCFLAGS=-march=armv7-a M=fs/ext4 modules -j$(nproc) && \
+    make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- HOSTCFLAGS=-fcommon KCFLAGS=-march=armv7-a M=drivers/block modules -j$(nproc)
+    echo '=== RESULT ===' && \
+    find fs -maxdepth 2 -name '*.ko' -ls && \
+    echo '=== VERMAGIC ===' && \
+    strings fs/jbd2/jbd2.ko fs/ext4/ext4.ko 2>/dev/null | grep '^vermagic=' && \
+    file fs/mbcache.ko fs/jbd2/jbd2.ko fs/ext4/ext4.ko
+  ```
+- Upload them to /app/sd/lib/komod
+
+- Create an empty file on your SD to be your alpine rootfs. On the camera:
+  `/app/sd/lib # truncate -s 500M alpine-root`
+  ``
+
 ## Happy hacking
 
 
