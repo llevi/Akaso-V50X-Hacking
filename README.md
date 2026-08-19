@@ -101,6 +101,7 @@ rtsp://xx.xx.xx.xx:554/livestream/12
 - Upload them to /app/sd/lib/komod
 
 - Sadly, i was not able to use loop device yet since the kernel module didn't work on this custom kernel. So I reformatted my sdcard to have 2 partitions, one is the usual vfat and the other is an ext4 to run alpine linux in it (vfat doesn't support symlinks)
+- But with this, the camera shows "Format Sd card" error
 - Followed this: https://wiki.alpinelinux.org/wiki/Alpine_Linux_in_a_chroot to run a chroot
 - Run these commands to start the alpine environment:
 ```
